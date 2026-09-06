@@ -373,7 +373,7 @@ func createAndApplyPipelineRunTemplate(f fn.Function, namespace string, labels m
 
 	// add BP_GO_WORKDIR for go-build buildpack
 	if f.Runtime == "go" {
-		buildEnvs = append(buildEnvs, "BP_GO_WORKDIR="+filepath.Join(fn.BuildDir))
+		buildEnvs = append(buildEnvs, "BP_GO_WORKDIR="+filepath.Join(fn.RunDataDir, fn.BuildDir))
 	}
 
 	s2iImageScriptsUrl := defaultS2iImageScriptsUrl
@@ -385,7 +385,7 @@ func createAndApplyPipelineRunTemplate(f fn.Function, namespace string, labels m
 
 	// Determine if TLS verification should be skipped
 	tlsVerify := "true"
-	if f.RegistryInsecure && isInsecureRegistry(f.Registry) {
+	if f.RegistryInsecure || isInsecureRegistry(f.Registry) {
 		tlsVerify = "false"
 	}
 
@@ -419,12 +419,12 @@ func createAndApplyPipelineRunTemplate(f fn.Function, namespace string, labels m
 	case builders.Pack:
 		template = packRunTemplate
 	case builders.S2I:
-		template = packRunTemplate
+		template = s2iRunTemplate
 	default:
 		return builders.ErrBuilderNotSupported{Builder: f.Build.Builder}
 	}
 
-	return createAndApplyResource(f.Root, pipelineFileName, template, "pipelinerun", getPipelineName(f), namespace, data)
+	return createAndApplyResource(f.Root, pipelineFileName, template, "pipelinerun", getPipelineRunGenerateName(f), namespace, data)
 }
 
 // allows simple mocking in unit tests
