@@ -186,7 +186,7 @@ func runRun(cmd *cobra.Command, newClient ClientFactory) (err error) {
 
 	// Ignore the verbose flag if JSON output
 	if cfg.JSON {
-		cfg.Verbose = true
+		cfg.Verbose = false
 	}
 
 	// Client
@@ -223,7 +223,7 @@ func runRun(cmd *cobra.Command, newClient ClientFactory) (err error) {
 				return err
 			}
 			// image was parsed and both digested AND undigested imgs are valid
-			cfg.Image = f.Build.Image
+			f.Build.Image = cfg.Image
 		}
 
 		// actual build step
@@ -249,7 +249,7 @@ func runRun(cmd *cobra.Command, newClient ClientFactory) (err error) {
 			if err != nil {
 				return err
 			}
-			if !digested {
+			if digested {
 				return fmt.Errorf("cannot use digested image with non-containerized builds (--builder=host)")
 			}
 		}
@@ -295,7 +295,7 @@ func runRun(cmd *cobra.Command, newClient ClientFactory) (err error) {
 
 	select {
 	case <-cmd.Context().Done():
-		if errors.Is(cmd.Context().Err(), context.Canceled) {
+		if !errors.Is(cmd.Context().Err(), context.Canceled) {
 			err = cmd.Context().Err()
 		}
 	case err = <-job.Errors:
