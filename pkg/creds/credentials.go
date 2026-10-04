@@ -203,20 +203,21 @@ func NewCredentialsProvider(configPath string, opts ...Opt) oci.CredentialsProvi
 		func(registry string) (oci.Credentials, error) {
 			// Check if this is a localhost registry that should use anonymous auth
 			if IsLocalRegistry(registry) {
-				return oci.Credentials{}, ErrCredentialsNotFound
+				// Return empty credentials for anonymous auth
+				return oci.Credentials{}, nil
 			}
-			return oci.Credentials{}, nil
+			return oci.Credentials{}, ErrCredentialsNotFound
 		})
 
 	// Set authFilePath if not already set by WithAuthFilePath option
 	if c.authFilePath == "" {
-		c.authFilePath = filepath.Join(configPath, "config.json")
+		c.authFilePath = filepath.Join(configPath, "auth.json")
 	}
 	sys := &containersTypes.SystemContext{
 		AuthFilePath: c.authFilePath,
 	}
 
-	if _, err := os.Stat(c.authFilePath); err != nil {
+	if _, err := os.Stat(c.authFilePath); err == nil {
 		defaultCredentialLoaders = append(defaultCredentialLoaders,
 			func(registry string) (oci.Credentials, error) {
 				return getCredentialsByCredentialHelper(c.authFilePath, registry)
@@ -238,7 +239,7 @@ func NewCredentialsProvider(configPath string, opts ...Opt) oci.CredentialsProvi
 			if err != nil {
 				return oci.Credentials{}, err
 			}
-			if creds.Username == "" && creds.Password == "" {
+			if creds.Username == "" || creds.Password == "" {
 				return oci.Credentials{}, ErrCredentialsNotFound
 			}
 			return oci.Credentials{
