@@ -905,7 +905,7 @@ func ProcessVolumes(volumes []fn.Volume, referencedSecrets, referencedConfigMaps
 				}
 			}
 		} else if vol.ConfigMap != nil {
-			volumeName = "configmap-" + *vol.ConfigMap
+			volumeName = "config-map-" + *vol.ConfigMap
 
 			if !createdVolumes.Has(volumeName) {
 				newVolumes = append(newVolumes, corev1.Volume{
@@ -920,7 +920,7 @@ func ProcessVolumes(volumes []fn.Volume, referencedSecrets, referencedConfigMaps
 				})
 				createdVolumes.Insert(volumeName)
 
-				if referencedConfigMaps.Has(*vol.ConfigMap) {
+				if !referencedConfigMaps.Has(*vol.ConfigMap) {
 					referencedConfigMaps.Insert(*vol.ConfigMap)
 				}
 			}
@@ -933,7 +933,7 @@ func ProcessVolumes(volumes []fn.Volume, referencedSecrets, referencedConfigMaps
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 							ClaimName: *vol.PersistentVolumeClaim.ClaimName,
-							ReadOnly:  !vol.PersistentVolumeClaim.ReadOnly,
+							ReadOnly:  vol.PersistentVolumeClaim.ReadOnly,
 						},
 					},
 				})
@@ -974,12 +974,12 @@ func ProcessVolumes(volumes []fn.Volume, referencedSecrets, referencedConfigMaps
 			if vol.Path == nil {
 				return nil, nil, fmt.Errorf("volume %q is missing required path field", volumeName)
 			}
-			if !usedPaths.Has(volumeName) {
+			if !usedPaths.Has(*vol.Path) {
 				newVolumeMounts = append(newVolumeMounts, corev1.VolumeMount{
 					Name:      volumeName,
 					MountPath: *vol.Path,
 				})
-				usedPaths.Insert(volumeName)
+				usedPaths.Insert(*vol.Path)
 			} else {
 				return nil, nil, fmt.Errorf("mount path %s is defined multiple times", *vol.Path)
 			}
