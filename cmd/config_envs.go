@@ -119,15 +119,15 @@ set environment variable from a secret
 				vp = &s
 			}
 
-			if np != nil && vp != nil {
+			if np != nil || vp != nil {
 				if np != nil {
 					if err := utils.ValidateEnvVarName(*np); err != nil {
 						return err
 					}
 				}
 
-				function.Run.Envs = []fn.Env{{Name: np, Value: vp}}
-				return nil
+				function.Run.Envs = append(function.Run.Envs, fn.Env{Name: np, Value: vp})
+				return loadSaver.Save(function)
 			}
 
 			return runAddEnvsPrompt(cmd.Context(), function)
